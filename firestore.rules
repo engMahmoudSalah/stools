@@ -1,0 +1,73 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: userId
+    // Fields:
+    //   - email: string (required, email format)
+    //   - password: string (required, hashed)
+    //   - emailVerified: timestamp (optional)
+    //   - failedLoginAttempts: number (required)
+    //   - lockoutUntil: timestamp (optional)
+    //   - isActive: boolean (required)
+    //
+    // Collection: sessions
+    // Document ID: sessionId
+    // Fields:
+    //   - userId: string (required)
+    //   - refreshToken: string (required)
+    //   - expiresAt: timestamp (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isSharedEditable(appId, userId) {
+      let config = get(/databases/$(database)/documents/artifacts/$(appId)/public/data/shareConfigs/$(userId));
+      return config != null && config.data.enabled == true && config.data.permission == 'edit';
+    }
+
+    function isSharedEnabled(appId, userId) {
+      let config = get(/databases/$(database)/documents/artifacts/$(appId)/public/data/shareConfigs/$(userId));
+      return config != null && config.data.enabled == true;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.keys().hasAll(['email', 'password', 'failedLoginAttempts', 'isActive']);
+      allow update: if isOwner(userId);
+    }
+
+    match /sessions/{sessionId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == resource.data.userId;
+    }
+
+    match /artifacts/{appId}/users/{userId}/{document=**} {
+      allow read: if isOwner(userId) || isSharedEnabled(appId, userId);
+      allow write: if isOwner(userId) || isSharedEditable(appId, userId);
+    }
+
+    match /artifacts/{appId}/public/data/shareConfigs/{userId} {
+      allow read: if true;
+      allow write: if isOwner(userId);
+    }
+  }
+}
