@@ -429,6 +429,7 @@ export default function App() {
       url: formatUrl(fd.get("url") as string),
       category: fd.get("category") || "other",
       description: fd.get("description") || "",
+      isFavorite: fd.get("isFavorite") === "true",
       updatedAt: Date.now(),
     };
     try {

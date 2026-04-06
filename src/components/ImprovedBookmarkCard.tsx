@@ -14,7 +14,7 @@ export const ImprovedBookmarkCard: React.FC<{
 }> = ({ bookmark, isSelected, isMultiSelect, isDead, toggleSelection, onClick }) => {
   return (
     <Card
-      className={`group relative overflow-hidden transition-all duration-300 hover:shadow-md cursor-pointer border ${isSelected ? 'border-primary ring-1 ring-primary' : isDead ? 'border-red-500 ring-1 ring-red-500' : 'border-border/50 hover:border-border'} flex flex-col p-3`}
+      className={`group relative overflow-hidden transition-all duration-300 hover:shadow-md cursor-pointer border ${isSelected ? 'border-primary ring-1 ring-primary' : 'border-border/50 hover:border-border'} flex flex-col p-3`}
       onClick={onClick}
     >
       {isDead && (

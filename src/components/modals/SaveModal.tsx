@@ -1,5 +1,5 @@
-import React from "react";
-import { X, RefreshCw, Wand2 } from "lucide-react";
+import React, { useState } from "react";
+import { X, RefreshCw, Wand2, Star } from "lucide-react";
 import { Bookmark, Category } from "@/src/types";
 
 interface SaveModalProps {
@@ -23,6 +23,7 @@ export const SaveModal: React.FC<SaveModalProps> = ({
   categoriesList,
   formRef,
 }) => {
+  const [addToFavorites, setAddToFavorites] = useState(editingItem?.isFavorite || false);
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
       <div
@@ -43,7 +44,11 @@ export const SaveModal: React.FC<SaveModalProps> = ({
         </div>
         <form
           ref={formRef}
-          onSubmit={handleSave}
+          onSubmit={(e) => {
+            const formData = new FormData(formRef.current!);
+            formData.set("isFavorite", String(addToFavorites));
+            handleSave(e);
+          }}
           className="flex flex-col gap-5"
         >
           <div className="relative">
@@ -97,7 +102,7 @@ export const SaveModal: React.FC<SaveModalProps> = ({
               className="w-full bg-neutral-50 dark:bg-[#050505] border border-black/10 dark:border-white/[0.08] text-black dark:text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-black/30 appearance-none outline-none"
             >
               {categoriesList
-                .filter((c) => c.name !== "all")
+                .filter((c) => c.name !== "all" && !c.isStatic)
                 .map((c) => (
                   <option key={c.id} value={c.name}>
                     {t[c.name] || c.name}
@@ -116,6 +121,21 @@ export const SaveModal: React.FC<SaveModalProps> = ({
               className="w-full bg-neutral-50 dark:bg-[#050505] border border-black/10 dark:border-white/[0.08] text-black dark:text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-black/30 dark:focus:border-zinc-500 transition-colors resize-none"
             ></textarea>
           </div>
+          <div className="flex items-center gap-3 py-2">
+            <label className="flex items-center gap-3 cursor-pointer flex-1">
+              <input
+                type="checkbox"
+                checked={addToFavorites}
+                onChange={(e) => setAddToFavorites(e.target.checked)}
+                className="w-4 h-4 rounded cursor-pointer"
+              />
+              <span className="text-[10px] uppercase tracking-widest text-neutral-500 dark:text-zinc-500 font-bold flex items-center gap-2">
+                <Star size={12} />
+                {t.addToFavorites || "Add to Favorites"}
+              </span>
+            </label>
+          </div>
+          <input type="hidden" name="isFavorite" value={String(addToFavorites)} />
           <div className="flex gap-3 mt-4">
             <button
               type="submit"

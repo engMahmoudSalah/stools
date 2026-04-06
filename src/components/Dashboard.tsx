@@ -45,6 +45,10 @@ import {
   Grip,
   LayoutDashboard,
   LayoutTemplate,
+  RefreshCw,
+  Zap,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Bookmark, Category } from "@/src/types";
 import { getFavicon } from "@/src/lib/utils";
@@ -85,13 +89,17 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 import { DynamicLightRays } from "./DynamicLightRays";
+import { FloatingToolComp } from "@/src/components/ui/FloatingToolComp";
+import { ChatGPTIcon, GeminiIcon, ReactIcon, NeonDBIcon } from "@/src/components/icons/Icons";
 
 interface DashboardProps {
   t: any;
@@ -151,6 +159,7 @@ interface DashboardProps {
   updatePreference: (prefs: any) => void;
   showToast: (msg: string) => void;
   callGemini: (prompt: string) => Promise<string>;
+  isLoading?: boolean;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -211,6 +220,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   updatePreference,
   showToast,
   callGemini,
+  isLoading = false,
 }) => {
   const [isMultiSelect, setIsMultiSelect] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -263,6 +273,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
   const [isRenameGroupModalOpen, setIsRenameGroupModalOpen] = useState(false);
   const [groupToRename, setGroupToRename] = useState<Bookmark | null>(null);
+  const [showFloatingTools, setShowFloatingTools] = useState(false);
+  const [isSelectBookmarksModalOpen, setIsSelectBookmarksModalOpen] = useState(false);
+  const [selectedBookmarksToFavorite, setSelectedBookmarksToFavorite] = useState<Set<string>>(new Set());
 
   React.useEffect(() => {
     if (expandedGroupId) {
@@ -797,12 +810,27 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     <div className="h-20 w-20 rounded-full bg-muted/50 flex items-center justify-center mb-6">
                       <Archive className="h-10 w-10 text-muted-foreground/50" strokeWidth={1.5} />
                     </div>
-                    <h3 className="text-lg font-semibold mb-2">{t.noBookmarksFound}</h3>
+                    <h3 className="text-lg font-semibold mb-2">
+                      {selectedCategory === "favorites" ? t.favoritesEmpty || "Favorites is Empty" : t.noBookmarksFound}
+                    </h3>
                     <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-6">
-                      {searchTerm ? t.noSearchMatch : t.noBookmarksInCollection}
+                      {selectedCategory === "favorites" 
+                        ? t.noFavoritesAddBookmarks || "Add bookmarks to your favorites to see them here"
+                        : (searchTerm ? t.noSearchMatch : t.noBookmarksInCollection)
+                      }
                     </p>
                     {canEdit && (
-                      <Button onClick={() => { setEditingItem(null); setIsModalOpen(true); }} className="rounded-full px-6">
+                      <Button 
+                        onClick={() => {
+                          if (selectedCategory === "favorites") {
+                            setIsSelectBookmarksModalOpen(true);
+                          } else {
+                            setEditingItem(null);
+                            setIsModalOpen(true);
+                          }
+                        }} 
+                        className="rounded-full px-6"
+                      >
                         <Plus className="me-2 h-4 w-4" /> {t.addYourFirstBookmark}
                       </Button>
                     )}
@@ -812,8 +840,33 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     layout
                     className={`${getContainerClasses()} overflow-hidden`}
                   >
-                    <AnimatePresence>
-                      {displayBookmarks.map((bookmark) => {
+                    {isLoading ? (
+                      // Loading skeletons
+                      Array.from({ length: 6 }).map((_, index) => {
+                        return (
+                          <motion.div
+                            layout
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{ duration: 0.2, delay: index * 0.1 }}
+                            key={`skeleton-${index}`}
+                          >
+                            <Card className="flex flex-col p-6 h-[240px] bg-gradient-to-b from-background to-muted/10">
+                              <div className="flex flex-col items-center text-center gap-4 h-full">
+                                <Skeleton className="h-24 w-24 rounded-2xl" />
+                                <div className="flex-1 flex flex-col justify-between w-full mt-2 space-y-3">
+                                  <Skeleton className="h-6 w-3/4 mx-auto" />
+                                  <Skeleton className="h-5 w-1/2 mx-auto" />
+                                </div>
+                              </div>
+                            </Card>
+                          </motion.div>
+                        );
+                      })
+                    ) : (
+                      <AnimatePresence>
+                        {displayBookmarks.map((bookmark) => {
                         const isSelected = selectedItems.has(bookmark.id);
                         
                         // Action Menu Component to reuse
@@ -945,7 +998,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                           return (
                             <motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2 }} key={bookmark.id}>
                               <Card 
-                                className={`group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer ${isSelected ? 'ring-1 ring-primary' : deadLinkIds.has(bookmark.id) ? 'ring-1 ring-red-500' : 'hover:border-primary/50'} flex flex-col p-6 h-[240px] bg-gradient-to-b from-background to-muted/10`}
+                                className={`group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer ${isSelected ? 'ring-1 ring-primary' : 'hover:border-primary/50'} flex flex-col p-6 h-[240px] bg-gradient-to-b from-background to-muted/10`}
                                 onClick={(e) => {
                                   if (isMultiSelect) toggleSelection(bookmark.id, e);
                                   else window.open(bookmark.url, "_blank");
@@ -1006,6 +1059,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                   else window.open(bookmark.url, "_blank");
                                 }}
                               >
+                                {deadLinkIds.has(bookmark.id) && (
+                                  <Badge variant="destructive" className="absolute top-2 right-2 text-[8px] uppercase tracking-wider px-1.5 py-0.5 h-5 font-normal">
+                                    Dead
+                                  </Badge>
+                                )}
                                 <div className="flex flex-col items-center text-center gap-3 h-full">
                                   {isMultiSelect && (
                                     <div className="absolute top-3 left-3 z-10" onClick={(e) => { e.stopPropagation(); toggleSelection(bookmark.id, e); }}>
@@ -1056,6 +1114,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                   else window.open(bookmark.url, "_blank");
                                 }}
                               >
+                                {deadLinkIds.has(bookmark.id) && (
+                                  <Badge variant="destructive" className="absolute top-1 right-1 text-[7px] uppercase tracking-wider px-1 py-0.5 h-4 font-normal">
+                                    Dead
+                                  </Badge>
+                                )}
                                 <div className="flex flex-col items-center justify-center text-center gap-2 h-full">
                                   {isMultiSelect && (
                                     <div className="absolute top-2 left-2 z-10" onClick={(e) => { e.stopPropagation(); toggleSelection(bookmark.id, e); }}>
@@ -1101,6 +1164,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                   else window.open(bookmark.url, "_blank");
                                 }}
                               >
+                                {deadLinkIds.has(bookmark.id) && (
+                                  <Badge variant="destructive" className="absolute top-0.5 right-0.5 text-[6px] uppercase tracking-wider px-0.5 py-0 h-3 font-normal">
+                                    Dead
+                                  </Badge>
+                                )}
                                 <div className="flex flex-col items-center text-center gap-1 h-full">
                                   {isMultiSelect && (
                                     <div className="absolute top-1 left-1 z-10" onClick={(e) => { e.stopPropagation(); toggleSelection(bookmark.id, e); }}>
@@ -1146,6 +1214,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                   else window.open(bookmark.url, "_blank");
                                 }}
                               >
+                                {deadLinkIds.has(bookmark.id) && (
+                                  <Badge variant="destructive" className="absolute top-1 right-1 text-[6px] uppercase tracking-wider px-0.5 py-0 h-3 font-normal">
+                                    Dead
+                                  </Badge>
+                                )}
                                 <div className="flex items-center gap-3 w-full">
                                   {isMultiSelect && (
                                     <div className="shrink-0" onClick={(e) => { e.stopPropagation(); toggleSelection(bookmark.id, e); }}>
@@ -1194,6 +1267,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                   else window.open(bookmark.url, "_blank");
                                 }}
                               >
+                                {deadLinkIds.has(bookmark.id) && (
+                                  <Badge variant="destructive" className="absolute top-2 right-2 text-[7px] uppercase tracking-wider px-1 py-0.5 h-4 font-normal">
+                                    Dead
+                                  </Badge>
+                                )}
                                 <div className="flex items-start gap-4 h-full">
                                   {isMultiSelect && (
                                     <div className="shrink-0 mt-1" onClick={(e) => { e.stopPropagation(); toggleSelection(bookmark.id, e); }}>
@@ -1252,6 +1330,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                   else window.open(bookmark.url, "_blank");
                                 }}
                               >
+                                {deadLinkIds.has(bookmark.id) && (
+                                  <Badge variant="destructive" className="absolute top-1 right-1 text-[6px] uppercase tracking-wider px-0.5 py-0 h-3 font-normal">
+                                    Dead
+                                  </Badge>
+                                )}
                                 <div className="flex items-center gap-3 w-full">
                                   {isMultiSelect && (
                                     <div className="shrink-0" onClick={(e) => { e.stopPropagation(); toggleSelection(bookmark.id, e); }}>
@@ -1297,6 +1380,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                   else window.open(bookmark.url, "_blank");
                                 }}
                               >
+                                {deadLinkIds.has(bookmark.id) && (
+                                  <Badge variant="destructive" className="absolute top-1 right-1 text-[7px] uppercase tracking-wider px-1 py-0.5 h-4 font-normal z-10">
+                                    Dead
+                                  </Badge>
+                                )}
                                 <div className="flex flex-row md:flex-col items-center gap-3 md:gap-2 w-full md:justify-center">
                                   {isMultiSelect && (
                                     <div className="shrink-0 md:absolute md:top-2 md:left-2 md:z-10" onClick={(e) => { e.stopPropagation(); toggleSelection(bookmark.id, e); }}>
@@ -1341,6 +1429,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                 else window.open(bookmark.url, "_blank");
                               }}
                             >
+                              {deadLinkIds.has(bookmark.id) && (
+                                <Badge variant="destructive" className="absolute top-3 right-3 text-[8px] uppercase tracking-wider px-1.5 py-0.5 h-5 font-normal">
+                                  Dead
+                                </Badge>
+                              )}
                               <div className="flex items-start gap-4 h-full">
                                 {isMultiSelect && (
                                   <div className="shrink-0 mt-1" onClick={(e) => { e.stopPropagation(); toggleSelection(bookmark.id, e); }}>
@@ -1387,7 +1480,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                           </motion.div>
                         );
                       })}
-                    </AnimatePresence>
+                      </AnimatePresence>
+                    )}
                   </motion.div>
                 )}
               </div>
@@ -1539,16 +1633,193 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
         </div>
       )}
-      <Dialog open={isSuggestionsModalOpen} onOpenChange={setIsSuggestionsModalOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>{t.smartSuggestions}</DialogTitle>
-            <div className="text-sm text-muted-foreground mt-4 whitespace-pre-wrap">
+      <Sheet open={isSuggestionsModalOpen} onOpenChange={setIsSuggestionsModalOpen}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>{t.smartSuggestions}</SheetTitle>
+            <SheetDescription className="whitespace-pre-wrap">
               {suggestions}
-            </div>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
+            </SheetDescription>
+          </SheetHeader>
+        </SheetContent>
+      </Sheet>
+
+      {/* Select Bookmarks to Favorites Modal */}
+      <Sheet open={isSelectBookmarksModalOpen} onOpenChange={setIsSelectBookmarksModalOpen}>
+        <SheetContent side={lang === "ar" ? "left" : "right"} className="w-full sm:w-[540px]">
+          <SheetHeader>
+            <SheetTitle>{t.selectBookmarks || "Select Bookmarks to Add to Favorites"}</SheetTitle>
+            <SheetDescription>
+              {t.selectBookmarksDesc || "Choose bookmarks from your collection to add to favorites"}
+            </SheetDescription>
+          </SheetHeader>
+          <div className="mt-6 space-y-3 max-h-[calc(100vh-200px)] overflow-y-auto">
+            {bookmarks
+              .filter(b => !b.isFavorite && !b.isGroup)
+              .map((bookmark) => (
+                <div 
+                  key={bookmark.id} 
+                  className="flex items-start gap-3 p-3 rounded-lg border border-border/50 hover:border-primary/50 cursor-pointer transition-colors"
+                  onClick={() => {
+                    const newSelected = new Set(selectedBookmarksToFavorite);
+                    if (newSelected.has(bookmark.id)) {
+                      newSelected.delete(bookmark.id);
+                    } else {
+                      newSelected.add(bookmark.id);
+                    }
+                    setSelectedBookmarksToFavorite(newSelected);
+                  }}
+                >
+                  <div className="flex items-center justify-center h-6 w-6 rounded border border-border flex-shrink-0 mt-0.5">
+                    {selectedBookmarksToFavorite.has(bookmark.id) && (
+                      <Check className="h-4 w-4 text-primary" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-sm truncate">{bookmark.title}</h4>
+                    <p className="text-xs text-muted-foreground truncate">{bookmark.url}</p>
+                  </div>
+                </div>
+              ))}
+            {bookmarks.filter(b => !b.isFavorite && !b.isGroup).length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                {t.allBookmarksFavorited || "All your bookmarks are already in favorites!"}
+              </p>
+            )}
+          </div>
+          <div className="flex gap-3 mt-6">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setIsSelectBookmarksModalOpen(false);
+                setSelectedBookmarksToFavorite(new Set());
+              }}
+              className="flex-1"
+            >
+              {t.cancel || "Cancel"}
+            </Button>
+            <Button 
+              onClick={() => {
+                selectedBookmarksToFavorite.forEach(id => {
+                  handleToggleFavorite(id, false);
+                });
+                setIsSelectBookmarksModalOpen(false);
+                setSelectedBookmarksToFavorite(new Set());
+              }}
+              disabled={selectedBookmarksToFavorite.size === 0}
+              className="flex-1"
+            >
+              {t.addToFavorites || `Add (${selectedBookmarksToFavorite.size})`}
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Floating Tools */}
+      {showFloatingTools && (
+        <div className={`fixed bottom-6 z-50 flex flex-col gap-3 ${lang === "ar" ? "left-6" : "right-6"}`}>
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="flex flex-col gap-2"
+          >
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  className="h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                  onClick={() => setShowFloatingTools(false)}
+                >
+                  <Zap className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                Hide Tools
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 bg-background/80 backdrop-blur-sm"
+                  onClick={getSmartSuggestions}
+                >
+                  <Wand2 className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                AI Suggestions
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 bg-background/80 backdrop-blur-sm"
+                  onClick={checkDeadLinks}
+                >
+                  <Link2Off className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                Check Dead Links
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 bg-background/80 backdrop-blur-sm"
+                  onClick={() => { setEditingItem(null); setIsModalOpen(true); }}
+                >
+                  <Plus className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                Add Bookmark
+              </TooltipContent>
+            </Tooltip>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Floating Background Elements */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <FloatingToolComp Icon={ChatGPTIcon} className="top-20 left-20" delay="0s" />
+        <FloatingToolComp Icon={GeminiIcon} className="top-40 right-32" delay="2s" />
+        <FloatingToolComp Icon={ReactIcon} className="bottom-32 left-40" delay="4s" />
+        <FloatingToolComp Icon={NeonDBIcon} className="bottom-20 right-20" delay="6s" />
+      </div>
+
+      {/* Show Tools Button */}
+      {!showFloatingTools && (
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className={`fixed bottom-6 z-50 ${lang === "ar" ? "left-6" : "right-6"}`}
+        >
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon"
+                className="h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 bg-black dark:bg-white text-white dark:text-black hover:bg-gray-900 dark:hover:bg-gray-100"
+                onClick={() => setShowFloatingTools(true)}
+              >
+                <Eye className="h-5 w-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              Show Tools
+            </TooltipContent>
+          </Tooltip>
+        </motion.div>
+      )}
     </TooltipProvider>
   );
 };
