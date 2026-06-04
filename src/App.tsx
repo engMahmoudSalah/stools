@@ -72,7 +72,7 @@ export default function App() {
     }
     return "large";
   });
-  const [themeMode, setThemeMode] = useState("system");
+  const [themeMode, setThemeMode] = useState("light");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
 
@@ -732,18 +732,23 @@ export default function App() {
       <main className={`relative z-10 w-full flex-1 flex flex-col ${(!user || (user.isAnonymous && !sharedSpaceId)) ? "overflow-y-auto overflow-x-hidden items-center pb-20 scrollbar-hide !overflow-y-visible !overflow-x-hidden" : "overflow-hidden !overflow-y-visible !overflow-x-hidden"}`}>
         {!user || (user.isAnonymous && !sharedSpaceId) ? (
           <>
-            <header className="w-full px-6 py-4 flex justify-between items-center bg-background/80 backdrop-blur-md border-b border-border/50 sticky top-0 z-50">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-black dark:bg-white flex items-center justify-center shadow-lg">
-                  <Boxes className="text-white dark:text-black w-3 h-3" />
+            <header className="fixed top-0 left-0 right-0 z-50 w-full px-6 py-3 flex justify-between items-center bg-white/70 dark:bg-black/70 backdrop-blur-xl border-b border-neutral-200/60 dark:border-white/8 transition-colors duration-300">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-neutral-900 dark:bg-white flex items-center justify-center">
+                  <Boxes className="text-white dark:text-black w-3.5 h-3.5" />
                 </div>
-                <span className="font-bold text-lg tracking-tighter uppercase leading-none">
+                <span className="font-bold text-lg tracking-[-0.04em] uppercase leading-none">
                   {t.logo}
                 </span>
               </div>
+              <nav className="hidden md:flex items-center gap-1">
+                <a href="#features" className="text-[13px] font-medium px-3.5 py-2 rounded-lg text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-white/8 transition-all">{t.features || "Features"}</a>
+                <a href="#how-it-works" className="text-[13px] font-medium px-3.5 py-2 rounded-lg text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-white/8 transition-all">{t.howItWorks || "How it works"}</a>
+                <a href="#faq" className="text-[13px] font-medium px-3.5 py-2 rounded-lg text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-white/8 transition-all">{t.faqTitle || "FAQ"}</a>
+              </nav>
               <div className="flex items-center gap-2">
-                <button onClick={() => { setAuthMode("login"); setIsAuthModalOpen(true); }} className="text-xs font-medium px-2 py-1.5 hover:text-primary transition-colors">{t.login}</button>
-                <button onClick={() => { setAuthMode("register"); setIsAuthModalOpen(true); }} className="text-xs font-bold bg-primary text-primary-foreground px-4 py-2 rounded-lg shadow-md hover:opacity-90 transition-all">{t.register}</button>
+                <button onClick={() => { setAuthMode("login"); setIsAuthModalOpen(true); }} className="text-[13px] font-medium px-4 py-2 rounded-lg text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/8 transition-all">{t.login}</button>
+                <button onClick={() => { setAuthMode("register"); setIsAuthModalOpen(true); }} className="text-[13px] font-semibold bg-neutral-900 dark:bg-white text-white dark:text-black px-5 py-2.5 rounded-xl shadow-sm hover:shadow-md hover:opacity-90 transition-all">{t.register}</button>
               </div>
             </header>
             <LandingPage
