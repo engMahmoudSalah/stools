@@ -34,6 +34,7 @@ CREATE INDEX IF NOT EXISTS items_owner ON items(owner)`;
     this.run("INSERT INTO items(id,owner,col,title,url,note,tags,fav,created) VALUES(?,?,?,?,?,?,?,?,?)", id, u.id, col, title, url, clean(d.note, 1000), normTags(d.tags), d.fav ? 1 : 0, now());
     return id;
   }
+  purgeUsers(ids) { const n = ids.map(() => "?").join(","); this.run(`DELETE FROM items WHERE owner IN (${n})`, ...ids); this.run(`DELETE FROM cols WHERE owner IN (${n})`, ...ids); }
   async app(c) {
     const { path, method, body } = c; let m;
     if (path === "/api/plans" && method === "GET") return { plans: [
