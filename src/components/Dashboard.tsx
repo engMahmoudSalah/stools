@@ -229,23 +229,30 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [isSuggestionsModalOpen, setIsSuggestionsModalOpen] = useState(false);
 
   const checkDeadLinks = async () => {
-    showToast("Checking dead links...");
+    showToast("Checking links...");
     const newDeadLinkIds = new Set<string>();
-    for (const bookmark of bookmarks) {
+    // statuses that mean "the page exists" even if it blocks bots (auth walls, rate limits, HEAD not allowed)
+    const aliveStatuses = new Set([401, 403, 405, 429, 999]);
+    const checkOne = async (bookmark: { id: string; url: string }) => {
       try {
-        const response = await fetch('/api/check-url', {
+        const response = await fetch('https://gfk-api.mahmodsalah.workers.dev/v1/stools/check', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url: bookmark.url }),
         });
+        if (!response.ok) return; // invalid URL format or service problem: do not accuse the link
         const data = await response.json();
-        if (data.status !== 200) {
-          newDeadLinkIds.add(bookmark.id);
-        }
+        const ok = (data.status >= 200 && data.status < 400) || aliveStatuses.has(data.status);
+        if (!ok) newDeadLinkIds.add(bookmark.id);
       } catch (e) {
-        newDeadLinkIds.add(bookmark.id);
+        // the checker itself was unreachable: leave the link unflagged instead of reporting a false dead link
       }
-    }
+    };
+    // 5 checks at a time instead of one by one
+    const queue = [...bookmarks];
+    await Promise.all(Array.from({ length: Math.min(5, queue.length) }, async () => {
+      for (let b = queue.shift(); b; b = queue.shift()) await checkOne(b);
+    }));
     setDeadLinkIds(newDeadLinkIds);
     if (newDeadLinkIds.size > 0) {
       showToast(`Found ${newDeadLinkIds.size} dead links.`);
