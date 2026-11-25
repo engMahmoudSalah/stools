@@ -1,4 +1,4 @@
-# Stools
+# Stash
 
 Smart bookmark manager with categories, search and a dead-link checker.
 
