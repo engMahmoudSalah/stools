@@ -25,3 +25,8 @@ body{background-image:radial-gradient(60vw 40vh at 100% -10%,color-mix(in srgb,v
 @keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
 @media (max-width:560px){.floattag:nth-of-type(n+5){display:none}}
 @media (prefers-reduced-motion:reduce){.sbk,.se .d1,.se .d2,.lk,.floattag{animation:none}.se .d1{transform:translateY(40px)}.se .d2{transform:translateY(20px)}.lk{transform:translateZ(calc(90px - var(--i)*30px)) translateX(calc(var(--i)*26px))}}
+/* RTL and language button */
+[dir=rtl] body{font-family:"Noto Sans Arabic","Segoe UI",system-ui,sans-serif}
+.langbtn{font-weight:700;min-width:44px}
+[dir=rtl] .nav{direction:rtl}[dir=rtl] th,[dir=rtl] td{text-align:start}
+[dir=rtl] input[type=email],[dir=rtl] input[type=password],[dir=rtl] input[type=url],[dir=rtl] input[type=datetime-local],[dir=rtl] input[type=date]{direction:ltr;text-align:right}

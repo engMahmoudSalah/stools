@@ -1,4 +1,7 @@
 import { install, reveal, tilt } from "/fx.js";
+import { setup as i18n } from "/i18n.js";
+import { D as AD, R as AR } from "/ar.js";
+i18n(AD, AR);
 import { theme, deckHero } from "/art.js";
 install(theme);
 import { $, h, api, siteFooter, byMahmoudView, toast, guard, modal, fmtDate, ago, initTheme, field, authForm, plansView, adminView } from "/kit.js";
