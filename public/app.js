@@ -1,4 +1,6 @@
-import { canvasEl, reveal, tilt } from "/fx.js";
+import { install, reveal, tilt } from "/fx.js";
+import { theme, deckHero } from "/art.js";
+install(theme);
 import { $, h, api, siteFooter, byMahmoudView, toast, guard, modal, fmtDate, ago, initTheme, field, authForm, plansView, adminView } from "/kit.js";
 const toggleTheme = initTheme();
 const S = { user: null, items: [], cols: [], limits: {}, q: "", tag: "", col: "all", dead: false };
@@ -14,7 +16,7 @@ function publicShell(content) {
   app.replaceChildren(h("header", { class: "topbar" }, h("div", { class: "in" }, h("a", { class: "brand", href: "#/" }, h("span", { class: "lg" }, "★"), "Stash"), h("div", { class: "grow" }), h("button", { class: "btn sm", "aria-label": "Toggle dark mode", onclick: toggleTheme }, "◐"))), h("main", {}, content), siteFooter());
 }
 function landing() {
-  publicShell(h("div", { class: "landing" }, h("div", { class: "hero fxwrap" }, h("div", { class: "fxbg" }, canvasEl("p")), h("div", { class: "fxart floaty" }, canvasEl("wire", "cube")), h("h1", {}, "Every link you care about, one search away"), h("p", { class: "muted", style: "max-width:560px;margin:0 auto 20px" }, "Collections, tags, instant search, public share pages, import and export. Free to start.")),
+  publicShell(h("div", { class: "landing" }, h("div", { class: "hero" }, h("div", { html: deckHero() }), h("h1", {}, "Every link you care about, one search away"), h("p", { class: "muted", style: "max-width:560px;margin:0 auto 20px" }, "Collections, tags, instant search, public share pages, import and export. Free to start.")),
     h("div", { class: "row", style: "justify-content:center" }, authForm((u) => { S.user = u; route(); }, { title: "Start with Stash", sub: "Log in or create a free account." })),
     h("div", { class: "feat" }, [["Collections and tags", "Group links your way and filter in one tap."], ["Share a page", "Turn any collection into a public page with one switch."], ["Import and export", "Bring bookmarks from your browser. Take them with you any time."], ["Link checker", "Find dead links before you need them."]].map(([a, b]) => h("div", { class: "card reveal tcard" }, h("h3", {}, a), h("p", { class: "muted" }, b))))));
   reveal(document); document.querySelectorAll(".tcard").forEach(tilt);
