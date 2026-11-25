@@ -1,4 +1,4 @@
-import { $, h, api, siteFooter, toast, guard, modal, fmtDate, ago, initTheme, field, authForm, plansView, adminView } from "/kit.js";
+import { $, h, api, siteFooter, byMahmoudView, toast, guard, modal, fmtDate, ago, initTheme, field, authForm, plansView, adminView } from "/kit.js";
 const toggleTheme = initTheme();
 const S = { user: null, items: [], cols: [], limits: {}, q: "", tag: "", col: "all", dead: false };
 const app = $("#app");
@@ -123,6 +123,7 @@ function account() {
     h("button", { class: "btn", onclick: () => guard(async () => { await api("/api/auth/logout", {}); S.user = null; S.items = []; route(); }) }, "Log out")), "account");
 }
 async function route() {
+  if (location.pathname === "/by-mahmoud") { if (location.hash.length > 1) history.replaceState(null, "", "/" + location.hash); else return publicShell(byMahmoudView()); }
   const p = location.hash.replace(/^#/, "") || "/"; let m;
   if ((m = p.match(/^\/s\/([a-z0-9-]+)$/))) return publicPage(m[1]);
   if (!S.user) return landing();
