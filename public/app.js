@@ -38,7 +38,7 @@ async function library() {
     const tags = {}; S.items.forEach((i) => i.tags.forEach((t) => (tags[t] = (tags[t] || 0) + 1)));
     tagbar.replaceChildren(...Object.entries(tags).sort((a, b) => b[1] - a[1]).slice(0, 14).map(([t, n]) => h("button", { class: "badge tag" + (S.tag === t ? " on" : ""), onclick: () => { S.tag = S.tag === t ? "" : t; draw(); } }, `#${t} ${n}`)));
     const rows = shown(); const cur = S.cols.find((c) => c.id === S.col);
-    list.replaceChildren(cur ? colHeader(cur) : null, ...(rows.length ? rows.map(linkRow) : [h("div", { class: "card empty" }, S.items.length ? "No links match." : h("div", {}, h("h3", {}, "Your vault is empty"), h("p", {}, "Add your first link, or import bookmarks from your browser."), h("button", { class: "btn pri", onclick: () => linkModal() }, "+ Add link")))]));
+    list.replaceChildren(...(cur ? [colHeader(cur)] : []), ...(rows.length ? rows.map(linkRow) : [h("div", { class: "card empty" }, S.items.length ? "No links match." : h("div", {}, h("h3", {}, "Your vault is empty"), h("p", {}, "Add your first link, or import bookmarks from your browser."), h("button", { class: "btn pri", onclick: () => linkModal() }, "+ Add link")))]));
   };
   const q = h("input", { type: "search", placeholder: "Search title, link, notes, tags", "aria-label": "Search", value: S.q, oninput: (e) => { S.q = e.target.value; draw(); } });
   const dead = S.items.filter((i) => i.status === "dead").length;
