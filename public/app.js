@@ -53,10 +53,16 @@ async function library() {
   draw();
   const rd = draw; library.redraw = rd;
 }
+async function copyMd(c) {
+  const rows = S.items.filter((i) => i.col === c.id);
+  if (!rows.length) return toast("Add some links first.");
+  const md = `# ${c.name}\n\n` + rows.map((i) => `- [${(i.title || i.url).replace(/[\[\]]/g, "")}](${i.url})` + (i.note ? ` - ${i.note.replace(/\s+/g, " ")}` : "")).join("\n") + "\n";
+  try { await navigator.clipboard.writeText(md); toast("Markdown copied"); } catch { modal("Markdown", h("textarea", { rows: 10, readonly: true, style: "width:100%", onfocus: (e) => e.target.select() }, md)); }
+}
 function colHeader(c) {
   const url = c.slug ? `${location.origin}/#/s/${c.slug}` : "";
   return h("div", { class: "card stack" }, h("div", { class: "row spread" }, h("h2", { style: "margin:0" }, h("span", { class: "dot c-" + c.color }), c.name), h("div", { class: "row" },
-    h("button", { class: "btn sm", onclick: () => editCol(c) }, "Edit"), h("button", { class: "btn sm" + (c.slug ? " pri" : ""), onclick: () => guard(async () => { await api(`/api/collections/${c.id}`, { shared: !c.slug }); await load(); library(); }) }, c.slug ? "Shared: turn off" : "Share publicly"))),
+    h("button", { class: "btn sm", onclick: () => copyMd(c) }, "Copy as Markdown"), h("button", { class: "btn sm", onclick: () => editCol(c) }, "Edit"), h("button", { class: "btn sm" + (c.slug ? " pri" : ""), onclick: () => guard(async () => { await api(`/api/collections/${c.id}`, { shared: !c.slug }); await load(); library(); }) }, c.slug ? "Shared: turn off" : "Share publicly"))),
     c.descr ? h("p", { class: "muted", style: "margin:0" }, c.descr) : null,
     c.slug ? h("div", { class: "row small" }, h("a", { href: url, style: "word-break:break-all" }, url), h("button", { class: "btn sm", onclick: async () => { try { await navigator.clipboard.writeText(url); toast("Link copied"); } catch { toast("Copy the link above", true); } } }, "Copy")) : null);
 }
