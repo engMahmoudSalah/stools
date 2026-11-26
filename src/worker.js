@@ -35,6 +35,9 @@ CREATE INDEX IF NOT EXISTS items_owner ON items(owner)`;
     return id;
   }
   purgeUsers(ids) { const n = ids.map(() => "?").join(","); this.run(`DELETE FROM items WHERE owner IN (${n})`, ...ids); this.run(`DELETE FROM cols WHERE owner IN (${n})`, ...ids); }
+  exportData(u) {
+    return { collections: this.q("SELECT * FROM cols WHERE owner=? LIMIT 2000", u.id), links: this.q("SELECT * FROM items WHERE owner=? LIMIT 20000", u.id) };
+  }
   async app(c) {
     const { path, method, body } = c; let m;
     if (path === "/api/plans" && method === "GET") return { plans: [
