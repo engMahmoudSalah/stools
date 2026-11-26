@@ -6,6 +6,7 @@ function normUrl(u) {
   if (!/^[a-z][a-z0-9+.-]*:/i.test(u)) u = "https://" + u;
   let x; try { x = new URL(u); } catch { bad("That link doesn't look valid."); }
   if (!["http:", "https:"].includes(x.protocol)) bad("Only http and https links can be saved.");
+  if (x.username || x.password) bad("Links with a username or password inside can't be saved.");
   if (u.length > 2000) bad("That link is too long.");
   return x.toString();
 }
