@@ -44,3 +44,24 @@ body{background-image:radial-gradient(60vw 40vh at 100% -10%,color-mix(in srgb,v
 .deck{height:270px;padding-top:24px;box-sizing:border-box}
 @media (max-width:640px){.deck{height:250px}.deck3d{top:84px;scale:.82}.deck .tg,.deck [class*=tag]{max-width:100%}}
 .deck{overflow:visible}.hero{overflow-x:clip}
+
+/* Stash identity: cream, ink, acid lime. Fonts: Bricolage Grotesque + Hanken Grotesk (SIL OFL 1.1), self-hosted. */
+@font-face{font-family:Bricolage;font-weight:700;font-display:swap;src:url(/fonts/bricolage-grotesque-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Hanken Grotesk";font-weight:400;font-display:swap;src:url(/fonts/hanken-grotesk-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Hanken Grotesk";font-weight:600;font-display:swap;src:url(/fonts/hanken-grotesk-latin-600-normal.woff2) format("woff2")}
+:root{--bg:#f4f0e2;--surface:#fffdf5;--surface2:#ebe6d3;--text:#15140f;--muted:#57554a;--border:#cfc9b0;--accent:#2f5a10;--accent-t:#15140f;--accent-soft:#e2f39a;--lime:#c9f13a;--shadow:0 1px 0 rgba(21,20,15,.1),3px 3px 0 rgba(21,20,15,.12);--r:10px}
+[data-theme=dark]{--bg:#14130f;--surface:#1e1d17;--surface2:#29271f;--text:#f4f0e2;--muted:#b8b39f;--border:#3d3a2e;--accent:#d2f552;--accent-t:#14130f;--accent-soft:#33380f;--lime:#d2f552;--shadow:0 1px 0 rgba(0,0,0,.5),3px 3px 0 rgba(0,0,0,.4)}
+body{font-family:"Hanken Grotesk",system-ui,"Noto Sans Arabic",sans-serif}
+[dir=rtl] body{font-family:"Noto Sans Arabic","Segoe UI",system-ui,sans-serif}
+h1,h2,h3,.brand{font-family:Bricolage,"Hanken Grotesk",sans-serif;font-weight:700;letter-spacing:-.02em}
+[dir=rtl] h1,[dir=rtl] h2,[dir=rtl] h3,[dir=rtl] .brand{font-family:"Noto Sans Arabic",sans-serif;letter-spacing:0}
+.hero h1{font-size:clamp(2.2rem,8vw,3.8rem);line-height:1.05;text-align:start}
+.hero{text-align:start}
+.card{border:1.5px solid var(--text);border-radius:var(--r);box-shadow:var(--shadow);background:var(--surface)}
+.topbar{background:var(--bg);border-bottom:2px solid var(--text);backdrop-filter:none}
+.btn.pri,.btn.primary{background:var(--lime);color:#15140f;border:1.5px solid #15140f;box-shadow:2px 3px 0 #15140f}
+[data-theme=dark] .btn.pri{border-color:#f4f0e2;box-shadow:2px 3px 0 #f4f0e2}
+.btn.pri:active{box-shadow:none;transform:translate(2px,3px)}
+.card.link:hover{transform:translate(-1px,-2px);box-shadow:3px 5px 0 var(--text)}
+.lk{border-color:var(--text);border-radius:6px;box-shadow:3px 3px 0 var(--text)}
+body{background-image:none!important}.topbar+*{background:none}
