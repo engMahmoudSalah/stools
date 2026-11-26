@@ -39,3 +39,8 @@ body{background-image:radial-gradient(60vw 40vh at 100% -10%,color-mix(in srgb,v
   .link>.row:last-child{flex:0 0 100%;justify-content:flex-end;border-top:1px solid var(--border);padding-top:var(--sp-2);margin-top:var(--sp-1)}
 }
 @media(pointer:coarse){.star{width:var(--ctl);height:var(--ctl)}}
+
+/* hero deck: keep cards and tags inside the frame */
+.deck{height:270px;padding-top:24px;box-sizing:border-box}
+@media (max-width:640px){.deck{height:250px}.deck3d{top:84px;scale:.82}.deck .tg,.deck [class*=tag]{max-width:100%}}
+.deck{overflow:visible}.hero{overflow-x:clip}
