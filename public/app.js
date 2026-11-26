@@ -4,7 +4,7 @@ import { D as AD, R as AR } from "/ar.js";
 i18n(AD, AR);
 import { theme, deckHero } from "/art.js";
 install(theme);
-import { $, h, api, siteFooter, byMahmoudView, toast, guard, modal, fmtDate, ago, initTheme, field, authForm, plansView, adminView, emptyIcon } from "/kit.js";
+import { $, h, api, siteFooter, byMahmoudView, toast, guard, modal, fmtDate, ago, initTheme, field, authForm, plansView, adminView, emptyIcon, t as tr } from "/kit.js";
 const toggleTheme = initTheme();
 const S = { user: null, items: [], cols: [], limits: {}, q: "", tag: "", col: "all", dead: false };
 const app = $("#app");
@@ -78,13 +78,16 @@ function linkRow(i) {
 }
 function linkModal(i) {
   const url = h("input", { type: "text", inputmode: "url", value: i ? i.url : "", placeholder: "https://example.com", autocomplete: "off" }), title = h("input", { value: i ? i.title : "", placeholder: "Optional: defaults to the site name", maxlength: 200 });
+  const dup = h("div", { class: "small dupnote", role: "status", hidden: true });
+  const norm = (u) => String(u || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/#.*$/, "").replace(/\/+$/, "");
+  url.addEventListener("input", () => { const n = norm(url.value); const hit = n.length > 3 && S.items.find((x) => norm(x.url) === n && (!i || x.id !== i.id)); dup.hidden = !hit; dup.textContent = hit ? tr("Already saved") + ": " + hit.title : ""; });
   const note = h("textarea", { placeholder: "Why is this worth keeping?" }, i ? i.note : ""), tags = h("input", { value: i ? i.tags.join(", ") : "", placeholder: "read-later, design" });
   const col = h("select", {}, h("option", { value: "" }, "Unsorted"), S.cols.map((c) => h("option", { value: c.id, selected: i ? i.col === c.id : S.col === c.id }, c.name)));
   const m = modal(i ? "Edit link" : "Add link", h("form", { class: "stack", onsubmit: (e) => { e.preventDefault(); guard(async () => {
     const d = { url: url.value, title: title.value, note: note.value, tags: tags.value, col: col.value };
     if (i) await api(`/api/items/${i.id}`, d); else await api("/api/items", d);
     m.close(); toast("Saved"); await load(); library();
-  }); } }, field("Link", url), field("Title", title), field("Note", note), field("Tags", tags, "Comma separated"), field("Collection", col),
+  }); } }, field("Link", url), dup, field("Title", title), field("Note", note), field("Tags", tags, "Comma separated"), field("Collection", col),
     h("div", { class: "row" }, h("button", { class: "btn pri" }, "Save"), i ? h("button", { type: "button", class: "btn danger", onclick: () => confirm("Delete this link?") && guard(async () => { await api(`/api/items/${i.id}`, null, "DELETE"); m.close(); await load(); library(); }) }, "Delete") : null)));
 }
 function newCol() {
