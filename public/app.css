@@ -67,3 +67,4 @@ h1,h2,h3,.brand{font-family:Bricolage,"Hanken Grotesk",sans-serif;font-weight:70
 body{background-image:none!important}.topbar+*{background:none}
 .floattag{top:calc(var(--y)*.22);z-index:0}.deck3d{z-index:1}
 @media(max-width:640px){.floattag:nth-of-type(n+4){display:none}}.hero p{margin-inline:0;max-width:44ch}
+.tag,.chip,.tg{unicode-bidi:isolate;direction:ltr}
