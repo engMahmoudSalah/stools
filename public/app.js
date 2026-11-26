@@ -43,7 +43,7 @@ async function library() {
     const tags = {}; S.items.forEach((i) => i.tags.forEach((t) => (tags[t] = (tags[t] || 0) + 1)));
     tagbar.replaceChildren(...Object.entries(tags).sort((a, b) => b[1] - a[1]).slice(0, 14).map(([t, n]) => h("button", { class: "badge tag" + (S.tag === t ? " on" : ""), onclick: () => { S.tag = S.tag === t ? "" : t; draw(); } }, `#${t} ${n}`)));
     const rows = shown(); const cur = S.cols.find((c) => c.id === S.col);
-    list.replaceChildren(...(cur ? [colHeader(cur)] : []), ...(rows.length ? rows.map(linkRow) : [h("div", { class: "card empty" }, S.items.length ? "No links match." : h("div", {}, h("h3", {}, "Your vault is empty"), h("p", {}, "Add your first link, or import bookmarks from your browser."), h("button", { class: "btn pri", onclick: () => linkModal() }, "+ Add link")))]));
+    list.replaceChildren(...(cur ? [colHeader(cur)] : []), ...(rows.length ? rows.map(linkRow) : [h("div", { class: "card empty d3e" }, S.items.length ? "No links match." : h("div", {}, h("h3", {}, "Your vault is empty"), h("p", {}, "Add your first link, or import bookmarks from your browser."), h("button", { class: "btn pri", onclick: () => linkModal() }, "+ Add link")))]));
   };
   const q = h("input", { type: "search", placeholder: "Search title, link, notes, tags", "aria-label": "Search", value: S.q, oninput: (e) => { S.q = e.target.value; draw(); } });
   const dead = S.items.filter((i) => i.status === "dead").length;
@@ -121,10 +121,10 @@ function toolsModal() {
       h("button", { class: "btn", onclick: () => { const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]); dl("stash-bookmarks.html", "text/html", `<!DOCTYPE NETSCAPE-Bookmark-file-1>\n<TITLE>Bookmarks</TITLE><H1>Bookmarks</H1><DL><p>\n` + S.items.map((i) => `<DT><A HREF="${esc(i.url)}">${esc(i.title)}</A>`).join("\n") + `\n</DL><p>`); } }, "Download bookmarks HTML"))));
 }
 async function publicPage(slug) {
-  let d; try { d = await api(`/api/public/${slug}`); } catch (e) { return publicShell(h("div", { class: "card empty" }, h("h2", {}, "Page not found"), h("p", {}, e.message), h("a", { class: "btn", href: "#/" }, "Go to Stash"))); }
+  let d; try { d = await api(`/api/public/${slug}`); } catch (e) { return publicShell(h("div", { class: "card empty d3e" }, h("h2", {}, "Page not found"), h("p", {}, e.message), h("a", { class: "btn", href: "#/" }, "Go to Stash"))); }
   document.title = `${d.name} · Stash`;
   publicShell(h("div", { class: "stack", style: "max-width:760px;margin:0 auto" }, h("div", {}, h("h1", { style: "margin:0" }, h("span", { class: "dot c-" + d.color }), d.name), h("div", { class: "muted" }, `Shared by ${d.author} · ${d.items.length} link${d.items.length === 1 ? "" : "s"}`), d.descr ? h("p", {}, d.descr) : null),
-    d.items.length ? d.items.map((i) => h("div", { class: "card link" }, h("div", { class: "fav", "aria-hidden": "true" }, host(i.url).charAt(0).toUpperCase()), h("div", { class: "grow stack", style: "gap:4px" }, h("a", { class: "t", href: i.url, target: "_blank", rel: "noopener noreferrer nofollow ugc" }, i.title), h("div", { class: "small muted" }, host(i.url)), i.note ? h("div", { class: "small" }, i.note) : null))) : h("div", { class: "card empty" }, "This collection is empty."),
+    d.items.length ? d.items.map((i) => h("div", { class: "card link" }, h("div", { class: "fav", "aria-hidden": "true" }, host(i.url).charAt(0).toUpperCase()), h("div", { class: "grow stack", style: "gap:4px" }, h("a", { class: "t", href: i.url, target: "_blank", rel: "noopener noreferrer nofollow ugc" }, i.title), h("div", { class: "small muted" }, host(i.url)), i.note ? h("div", { class: "small" }, i.note) : null))) : h("div", { class: "card empty d3e" }, "This collection is empty."),
     h("div", { class: "card row spread" }, h("span", { class: "muted" }, "Make your own shareable link collections."), h("a", { class: "btn pri", href: "#/" }, "Try Stash free"))));
 }
 async function plans() { const d = await api("/api/plans"); shell(h("div", { class: "stack" }, h("h1", {}, "Plans"), plansView(d.plans, S.user.plan), h("p", { class: "muted small" }, "Paid plans are not available yet. Everything on Free works today.")), "plans"); }
@@ -148,7 +148,7 @@ async function route() {
     location.hash = "#/";
   } catch (e) {
     if (e.status === 401) { S.user = null; return landing(); }
-    shell(h("div", { class: "card empty" }, h("h2", {}, "Couldn't load this page"), h("p", {}, e.message), h("a", { class: "btn", href: "#/" }, "Go home")), "home");
+    shell(h("div", { class: "card empty d3e" }, h("h2", {}, "Couldn't load this page"), h("p", {}, e.message), h("a", { class: "btn", href: "#/" }, "Go home")), "home");
   }
 }
 addEventListener("hashchange", route);
