@@ -65,3 +65,5 @@ h1,h2,h3,.brand{font-family:Bricolage,"Hanken Grotesk",sans-serif;font-weight:70
 .card.link:hover{transform:translate(-1px,-2px);box-shadow:3px 5px 0 var(--text)}
 .lk{border-color:var(--text);border-radius:6px;box-shadow:3px 3px 0 var(--text)}
 body{background-image:none!important}.topbar+*{background:none}
+.floattag{top:calc(var(--y)*.22);z-index:0}.deck3d{z-index:1}
+@media(max-width:640px){.floattag:nth-of-type(n+4){display:none}}.hero p{margin-inline:0;max-width:44ch}
