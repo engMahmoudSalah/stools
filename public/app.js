@@ -72,7 +72,7 @@ function linkRow(i) {
     h("div", { class: "grow stack", style: "gap:4px" }, h("a", { class: "t", href: i.url, target: "_blank", rel: "noopener noreferrer", onclick: () => api(`/api/items/${i.id}/open`, {}).catch(() => {}) }, i.title),
       h("div", { class: "small muted", style: "word-break:break-all" }, host(i.url), i.status === "dead" ? h("span", { class: "badge bad", style: "margin-inline-start:8px" }, "Dead link") : null, i.status === "ok" ? h("span", { class: "badge ok", style: "margin-inline-start:8px" }, "Works") : null),
       i.note ? h("div", { class: "small" }, i.note) : null,
-      h("div", { class: "row", style: "gap:5px" }, col ? h("span", { class: "badge" }, h("span", { class: "dot c-" + col.color, style: "margin:0" }), col.name) : null, i.tags.map((t) => h("span", { class: "badge acc" }, "#" + t)))),
+      h("div", { class: "row", style: "gap:5px" }, col ? h("span", { class: "badge" }, h("span", { class: "dot c-" + col.color, style: "margin:0" }), col.name) : null, i.tags.map((t) => h("span", { class: "badge acc", dir: "ltr" }, "#" + t)))),
     h("div", { class: "row", style: "gap:0;flex-wrap:nowrap" }, h("button", { class: "star" + (i.fav ? " on" : ""), "aria-label": i.fav ? "Remove from favorites" : "Add to favorites", "aria-pressed": !!i.fav, onclick: () => guard(async () => { await api(`/api/items/${i.id}`, { fav: !i.fav }); i.fav = i.fav ? 0 : 1; library.redraw(); }) }, "★"),
       h("button", { class: "btn sm ghost", "aria-label": "Edit " + i.title, onclick: () => linkModal(i) }, "Edit")));
 }
