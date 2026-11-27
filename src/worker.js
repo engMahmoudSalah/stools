@@ -18,7 +18,7 @@ const tagList = (s) => (s ? s.split(",").filter(Boolean) : []);
 const normTags = (t) => [...new Set((Array.isArray(t) ? t : String(t || "").split(",")).map((x) => clean(x, 24).toLowerCase().replace(/[,\s]+/g, "-")).filter(Boolean))].slice(0, 8).join(",");
 
 export class Hub extends BaseHub {
-  adminHash() { return "3954f4c578cae100a111e4a8e3f3a02ed85d1f71944dacd76fb23b0eea2779e0"; }
+  adminHash() { return this.env.ADMIN_HASH || null; }
   schemaSQL() {
     return `CREATE TABLE IF NOT EXISTS cols(id TEXT PRIMARY KEY, owner TEXT NOT NULL, name TEXT NOT NULL, color TEXT NOT NULL DEFAULT 'blue', slug TEXT UNIQUE, descr TEXT NOT NULL DEFAULT '', created INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS items(id TEXT PRIMARY KEY, owner TEXT NOT NULL, col TEXT, title TEXT NOT NULL, url TEXT NOT NULL, note TEXT NOT NULL DEFAULT '', tags TEXT NOT NULL DEFAULT '', fav INTEGER NOT NULL DEFAULT 0, opens INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL DEFAULT '', checked INTEGER, created INTEGER NOT NULL);
