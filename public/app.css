@@ -70,3 +70,4 @@ body{background-image:none!important}.topbar+*{background:none}
 .tag,.chip,.tg{unicode-bidi:isolate;direction:ltr}
 .dupnote{color:var(--danger);font-weight:600;margin-top:calc(var(--sp-1)*-1)}.dupnote[hidden]{display:none}
 .colrow{display:flex;align-items:center;gap:2px}.colrow .nl{flex:1;min-width:0}.mv{display:flex;flex:none;opacity:.55}.colrow:hover .mv,.colrow:focus-within .mv{opacity:1}.mvb{background:none;border:0;color:var(--muted);cursor:pointer;min-width:28px;min-height:28px;border-radius:6px;font-size:.9rem}.mvb:hover:not(:disabled){background:var(--surface2);color:var(--text)}.mvb:disabled{opacity:.25;cursor:default}@media (hover:none){.mv{opacity:1}}
+@media (max-width:820px){.mv{display:none}}
