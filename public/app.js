@@ -39,7 +39,7 @@ async function library() {
   const nav = (key, label, n, color) => h("button", { class: "nl" + (S.col === key ? " on" : ""), style: S.col === key ? "background:var(--accent-soft)" : "", "aria-current": S.col === key ? "true" : null, onclick: () => { S.col = key; draw(); } }, h("span", {}, color ? h("span", { class: "dot c-" + color }) : null, label), h("span", { class: "muted small" }, n));
   const draw = () => {
     side.replaceChildren(nav("all", "All links", S.items.length), nav("fav", "★ Favorites", count((i) => i.fav)), nav("none", "Unsorted", count((i) => !i.col)),
-      ...S.cols.map((c) => nav(c.id, c.name, count((i) => i.col === c.id), c.color)), h("button", { class: "btn sm", style: "margin-top:8px", onclick: newCol }, "+ Collection"));
+      ...S.cols.map((c, ix) => h("div", { class: "colrow" }, nav(c.id, c.name, count((i) => i.col === c.id), c.color), S.cols.length > 1 ? h("span", { class: "mv" }, h("button", { class: "mvb", disabled: ix === 0, "aria-label": "Move up", title: "Move up", onclick: () => moveCol(ix, -1) }, "↑"), h("button", { class: "mvb", disabled: ix === S.cols.length - 1, "aria-label": "Move down", title: "Move down", onclick: () => moveCol(ix, 1) }, "↓")) : null)), h("button", { class: "btn sm", style: "margin-top:8px", onclick: newCol }, "+ Collection"));
     const tags = {}; S.items.forEach((i) => i.tags.forEach((t) => (tags[t] = (tags[t] || 0) + 1)));
     tagbar.replaceChildren(...Object.entries(tags).sort((a, b) => b[1] - a[1]).slice(0, 14).map(([t, n]) => h("button", { class: "badge tag" + (S.tag === t ? " on" : ""), onclick: () => { S.tag = S.tag === t ? "" : t; draw(); } }, `#${t} ${n}`)));
     const rows = shown(); const cur = S.cols.find((c) => c.id === S.col);
@@ -52,6 +52,11 @@ async function library() {
     tagbar, list, h("p", { class: "small muted" }, `${S.items.length} of ${S.limits.items} links on the ${S.user.plan} plan.`))), "home");
   draw();
   const rd = draw; library.redraw = rd;
+}
+async function moveCol(ix, d) {
+  const a = S.cols, j = ix + d; if (j < 0 || j >= a.length) return;
+  [a[ix], a[j]] = [a[j], a[ix]]; if (library.redraw) library.redraw();
+  try { await api("/api/collections/order", { ids: a.map((c) => c.id) }); } catch (e) { toast(e.message, true); await load(); if (library.redraw) library.redraw(); }
 }
 async function copyMd(c) {
   const rows = S.items.filter((i) => i.col === c.id);

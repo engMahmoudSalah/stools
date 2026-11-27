@@ -20,7 +20,8 @@ const normTags = (t) => [...new Set((Array.isArray(t) ? t : String(t || "").spli
 export class Hub extends BaseHub {
   adminHash() { return this.env.ADMIN_HASH || null; }
   schemaSQL() {
-    return `CREATE TABLE IF NOT EXISTS cols(id TEXT PRIMARY KEY, owner TEXT NOT NULL, name TEXT NOT NULL, color TEXT NOT NULL DEFAULT 'blue', slug TEXT UNIQUE, descr TEXT NOT NULL DEFAULT '', created INTEGER NOT NULL);
+    return `CREATE TABLE IF NOT EXISTS cols(id TEXT PRIMARY KEY, owner TEXT NOT NULL, name TEXT NOT NULL, color TEXT NOT NULL DEFAULT 'blue', slug TEXT UNIQUE, descr TEXT NOT NULL DEFAULT '', created INTEGER NOT NULL, pos INTEGER NOT NULL DEFAULT 0);
+ALTER TABLE cols ADD COLUMN pos INTEGER NOT NULL DEFAULT 0;
 CREATE TABLE IF NOT EXISTS items(id TEXT PRIMARY KEY, owner TEXT NOT NULL, col TEXT, title TEXT NOT NULL, url TEXT NOT NULL, note TEXT NOT NULL DEFAULT '', tags TEXT NOT NULL DEFAULT '', fav INTEGER NOT NULL DEFAULT 0, opens INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL DEFAULT '', checked INTEGER, created INTEGER NOT NULL);
 CREATE INDEX IF NOT EXISTS items_owner ON items(owner)`;
   }
@@ -53,7 +54,7 @@ CREATE INDEX IF NOT EXISTS items_owner ON items(owner)`;
     const u = this.need(c);
     if (path === "/api/data" && method === "GET") {
       const items = this.q("SELECT * FROM items WHERE owner=? ORDER BY created DESC", u.id).map((i) => this.out(i));
-      const cols = this.q("SELECT id,name,color,slug,descr FROM cols WHERE owner=? ORDER BY created", u.id);
+      const cols = this.q("SELECT id,name,color,slug,descr FROM cols WHERE owner=? ORDER BY pos, created", u.id);
       return { items, cols, limits: this.lim(u) };
     }
     if (path === "/api/items" && method === "POST") {
@@ -72,6 +73,13 @@ CREATE INDEX IF NOT EXISTS items_owner ON items(owner)`;
       }
     }
     if ((m = path.match(/^\/api\/items\/([a-f0-9]+)\/open$/)) && method === "POST") { this.run("UPDATE items SET opens=opens+1 WHERE id=? AND owner=?", m[1], u.id); return { ok: true }; }
+    if (path === "/api/collections/order" && method === "POST") {
+      const ids = Array.isArray(body.ids) ? body.ids.map(String).slice(0, 200) : [];
+      const mine = new Set(this.q("SELECT id FROM cols WHERE owner=?", u.id).map((r) => r.id));
+      if (!ids.length || ids.some((i) => !mine.has(i)) || new Set(ids).size !== ids.length) bad("Collection list is not valid.");
+      ids.forEach((id, i) => this.run("UPDATE cols SET pos=? WHERE id=? AND owner=?", i + 1, id, u.id));
+      return { ok: true };
+    }
     if (path === "/api/collections" && method === "POST") {
       const name = clean(body.name, 50); if (name.length < 2) bad("Give the collection a name.");
       if (this.one("SELECT COUNT(*) n FROM cols WHERE owner=?", u.id).n >= this.lim(u).cols) bad(`Your ${u.plan} plan allows ${this.lim(u).cols} collections.`, 402);
