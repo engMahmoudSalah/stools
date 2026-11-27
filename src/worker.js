@@ -36,6 +36,7 @@ CREATE INDEX IF NOT EXISTS items_owner ON items(owner)`;
     return id;
   }
   purgeUsers(ids) { const n = ids.map(() => "?").join(","); this.run(`DELETE FROM items WHERE owner IN (${n})`, ...ids); this.run(`DELETE FROM cols WHERE owner IN (${n})`, ...ids); }
+  usage(u) { const l = this.lim(u), n = (sql) => this.one(sql, u.id).n; return [["Saved links", n("SELECT COUNT(*) n FROM items WHERE owner=?"), l.items], ["Collections", n("SELECT COUNT(*) n FROM cols WHERE owner=?"), l.cols], ["Public pages", n("SELECT COUNT(*) n FROM cols WHERE owner=? AND slug IS NOT NULL"), l.shared]]; }
   exportData(u) {
     return { collections: this.q("SELECT * FROM cols WHERE owner=? LIMIT 2000", u.id), links: this.q("SELECT * FROM items WHERE owner=? LIMIT 20000", u.id) };
   }
