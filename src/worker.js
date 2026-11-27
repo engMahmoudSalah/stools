@@ -57,6 +57,12 @@ CREATE INDEX IF NOT EXISTS items_owner ON items(owner)`;
       const cols = this.q("SELECT id,name,color,slug,descr FROM cols WHERE owner=? ORDER BY pos, created", u.id);
       return { items, cols, limits: this.lim(u) };
     }
+    if (path === "/api/items/delete-dead" && method === "POST") {
+      this.limit("deldead:" + u.id, 10, 600e3);
+      const n = this.one("SELECT COUNT(*) n FROM items WHERE owner=? AND status='dead'", u.id).n;
+      this.run("DELETE FROM items WHERE owner=? AND status='dead'", u.id); this.audit(u.id, "delete_dead_links", n + " removed");
+      return { removed: n };
+    }
     if (path === "/api/items" && method === "POST") {
       if (this.one("SELECT COUNT(*) n FROM items WHERE owner=?", u.id).n >= this.lim(u).items) bad(`Your ${u.plan} plan holds ${this.lim(u).items} links. Pro is coming soon.`, 402);
       this.limit("add:" + u.id, 120, 600e3);

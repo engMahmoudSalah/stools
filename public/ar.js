@@ -1,5 +1,5 @@
 import { C, CR } from "/ar-common.js";
-export const D = { ...C, "Move up": "تحريك لأعلى", "Move down": "تحريك لأسفل", "Collection list is not valid.": "قائمة المجموعات غير صالحة.", "New here?": "جديد هنا؟", "Copy as Markdown": "نسخ بصيغة Markdown", "Markdown copied": "تم نسخ Markdown", "Markdown": "Markdown", "At least 8 characters": "8 أحرف على الأقل",
+export const D = { ...C, "Delete dead links": "حذف الروابط المعطلة", "Delete all dead links? This cannot be undone.": "حذف كل الروابط المعطلة؟ لا يمكن التراجع.", "Move up": "تحريك لأعلى", "Move down": "تحريك لأسفل", "Collection list is not valid.": "قائمة المجموعات غير صالحة.", "New here?": "جديد هنا؟", "Copy as Markdown": "نسخ بصيغة Markdown", "Markdown copied": "تم نسخ Markdown", "Markdown": "Markdown", "At least 8 characters": "8 أحرف على الأقل",
   "Stash": "ستاش", "+ Collection": "+ مجموعة", "Import / Export": "استيراد / تصدير", "Library": "المكتبة", "Every link you care about, one search away": "كل رابط يهمك، على بُعد بحث واحد", "Collections, tags, instant search, public share pages, import and export. Free to start.": "مجموعات ووسوم وبحث فوري وصفحات مشاركة عامة واستيراد وتصدير. ابدأ مجاناً.",
   "Start with Stash": "ابدأ مع ستاش", "Collections and tags": "المجموعات والوسوم", "Group links your way and filter in one tap.": "رتّب الروابط بطريقتك وصفّها بنقرة.", "Share a page": "شارك صفحة", "Turn any collection into a public page with one switch.": "حوّل أي مجموعة إلى صفحة عامة بزر واحد.",
   "Import and export": "الاستيراد والتصدير", "Bring bookmarks from your browser. Take them with you any time.": "أحضر إشاراتك المرجعية من المتصفح. وخذها معك متى شئت.", "Link checker": "فاحص الروابط", "Find dead links before you need them.": "اكتشف الروابط المعطلة قبل أن تحتاجها.",
@@ -18,7 +18,7 @@ export const D = { ...C, "Move up": "تحريك لأعلى", "Move down": "تح�
   "Collection not found.": "المجموعة غير موجودة.", "Enter a link.": "أدخل رابطاً.", "Give the collection a name.": "أعطِ المجموعة اسماً.", "Link not found.": "الرابط غير موجود.", "Nothing to import.": "لا شيء للاستيراد.", "Only http and https links can be saved.": "يمكن حفظ روابط http وhttps فقط.",
   "That link doesn't look valid.": "هذا الرابط لا يبدو صالحاً.", "That link is too long.": "هذا الرابط طويل جداً.", "This page doesn't exist or is no longer shared.": "هذه الصفحة غير موجودة أو لم تعد مشتركة.",
 };
-export const R = [...CR,
+export const R = [[/^Deleted (\d+) dead links$/, (m) => `تم حذف ${m[1]} رابط معطل`], ...CR,
   [/^Dead \((\d+)\)$/, (m) => `معطلة (${m[1]})`], [/^(\d+) of (\d+) links on the (.*) plan\.$/, (m, f) => `${m[1]} من ${m[2]} رابط في الخطة ${f(m[3])}.`], [/^Checking (\d+) links…$/, (m) => `جارٍ فحص ${m[1]} رابط…`], [/^Checking$/, () => "جارٍ الفحص"],
   [/^Checked (\d+): (\d+) dead\. Run again to check more\.$/, (m) => `تم فحص ${m[1]}: ${m[2]} معطل. أعد التشغيل لفحص المزيد.`], [/^Imported (\d+), skipped (\d+)$/, (m) => `تم استيراد ${m[1]}، وتخطي ${m[2]}`],
   [/^(.*) · Stash$/, (m) => `${m[1]} · ستاش`], [/^Shared by (.*) · (\d+) links?$/, (m) => `شاركها ${m[1]} · ${m[2]} رابط`], [/^Edit (.*)$/, (m) => `تعديل ${m[1]}`],
