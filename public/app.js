@@ -76,8 +76,8 @@ function linkRow(i) {
     h("div", { class: "row", style: "gap:0;flex-wrap:nowrap" }, h("button", { class: "star" + (i.fav ? " on" : ""), "aria-label": i.fav ? "Remove from favorites" : "Add to favorites", "aria-pressed": !!i.fav, onclick: () => guard(async () => { await api(`/api/items/${i.id}`, { fav: !i.fav }); i.fav = i.fav ? 0 : 1; library.redraw(); }) }, "★"),
       h("button", { class: "btn sm ghost", "aria-label": "Edit " + i.title, onclick: () => linkModal(i) }, "Edit")));
 }
-function linkModal(i) {
-  const url = h("input", { type: "text", inputmode: "url", value: i ? i.url : "", placeholder: "https://example.com", autocomplete: "off" }), title = h("input", { value: i ? i.title : "", placeholder: "Optional: defaults to the site name", maxlength: 200 });
+function linkModal(i, pre) {
+  const url = h("input", { type: "text", inputmode: "url", value: i ? i.url : (pre && pre.url) || "", placeholder: "https://example.com", autocomplete: "off" }), title = h("input", { value: i ? i.title : (pre && pre.title) || "", placeholder: "Optional: defaults to the site name", maxlength: 200 });
   const dup = h("div", { class: "small dupnote", role: "status", hidden: true });
   const norm = (u) => String(u || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/#.*$/, "").replace(/\/+$/, "");
   url.addEventListener("input", () => { const n = norm(url.value); const hit = n.length > 3 && S.items.find((x) => norm(x.url) === n && (!i || x.id !== i.id)); dup.hidden = !hit; dup.textContent = hit ? tr("Already saved") + ": " + hit.title : ""; });
@@ -119,6 +119,8 @@ function toolsModal() {
       if (!items.length) return toast("No links found in that file.", true);
       const r = await api("/api/import", { items }); m.close(); toast(`Imported ${r.added}, skipped ${r.skipped}`); await load(); library();
     }) }, "Import"),
+    h("h3", {}, "Save from any page"), h("p", { class: "muted small" }, "Drag this button to your bookmarks bar. On any page, click it to open Stash with that page ready to save."),
+    h("a", { class: "btn", href: `javascript:void(location.href=${JSON.stringify(location.origin + "/#/add?")}+"url="+encodeURIComponent(location.href)+"&title="+encodeURIComponent(document.title))`, onclick: (e) => { e.preventDefault(); toast("Drag this button to your bookmarks bar instead of clicking it."); } }, "★ Save to Stash"),
     h("h3", {}, "Export"), h("div", { class: "row" },
       h("button", { class: "btn", onclick: () => dl("stash-export.json", "application/json", JSON.stringify({ exported: new Date().toISOString(), items: S.items.map((i) => ({ title: i.title, url: i.url, note: i.note, tags: i.tags, collection: (S.cols.find((c) => c.id === i.col) || {}).name || "" })) }, null, 2)) }, "Download JSON"),
       h("button", { class: "btn", onclick: () => { const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]); dl("stash-bookmarks.html", "text/html", `<!DOCTYPE NETSCAPE-Bookmark-file-1>\n<TITLE>Bookmarks</TITLE><H1>Bookmarks</H1><DL><p>\n` + S.items.map((i) => `<DT><A HREF="${esc(i.url)}">${esc(i.title)}</A>`).join("\n") + `\n</DL><p>`); } }, "Download bookmarks HTML"))));
@@ -144,6 +146,12 @@ async function route() {
   if ((m = p.match(/^\/s\/([a-z0-9-]+)$/))) return publicPage(m[1]);
   if (!S.user) return landing();
   try {
+    if (p.startsWith("/add")) {
+      const q = new URLSearchParams(p.split("?")[1] || ""); history.replaceState(null, "", "#/");
+      await library(); const u = (q.get("url") || "").slice(0, 2000);
+      if (/^https?:\/\//i.test(u)) linkModal(null, { url: u, title: (q.get("title") || "").slice(0, 200) });
+      return;
+    }
     if (p === "/") return await library();
     if (p === "/plans") return await plans();
     if (p === "/account") return account();
